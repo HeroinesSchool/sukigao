@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>HEROINES SCHOOL 好き顔</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;background:#f7f7f8;color:#151515}
+main{max-width:760px;margin:auto;padding:20px 16px 50px}.hero{text-align:center;padding:22px 0 12px}.hero h1{font-size:28px;margin:0 0 8px}.hero p{color:#666;margin:0}
+.panel{background:#fff;border-radius:22px;padding:18px;box-shadow:0 4px 22px #0000000d;margin:14px 0}.modes{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+button{border:0;border-radius:14px;padding:14px;font-weight:700;font-size:15px;background:#111;color:white}.ghost{background:#eee;color:#222}.danger{background:#fff0f0;color:#a11}
+.progress{height:8px;background:#e9e9ed;border-radius:99px;overflow:hidden;margin:10px 0}.bar{height:100%;background:#111;width:0}
+.status{display:flex;justify-content:space-between;color:#666;font-size:13px}
+.arena{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}.card{background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 4px 20px #0001;cursor:pointer;border:2px solid transparent}.card:active{transform:scale(.985)}
+.card img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover}.info{padding:11px;text-align:center}.name{font-weight:800;font-size:17px}.group{font-size:12px;color:#777;margin-top:3px}
+.vs{text-align:center;font-weight:900;color:#999;margin:9px}.controls{display:flex;gap:8px;margin-top:14px}.controls button{flex:1}
+.rank{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #eee}.rank img{width:58px;height:58px;border-radius:12px;object-fit:cover}.num{font-weight:900;width:30px}.rname{font-weight:800}.rate{margin-left:auto;color:#777;font-size:12px}
+.hidden{display:none!important}.small{font-size:12px;color:#777;line-height:1.6}.badge{display:inline-block;background:#eee;border-radius:99px;padding:4px 8px;font-size:11px;margin-left:6px}
+@media(max-width:430px){main{padding:10px 10px 40px}.hero h1{font-size:23px}.panel{padding:13px}.arena{gap:8px}.name{font-size:15px}}
+</style></head>
+<body><main>
+<section class="hero"><h1>HEROINES SCHOOL<br>好き顔ランキング</h1><p>24人から、直感で好きな顔を選ぼう。</p></section>
+<section id="start" class="panel">
+<h2>比較回数を選択</h2>
+<div class="modes">
+<button onclick="begin(30)">30回</button><button onclick="begin(50)">50回</button>
+<button onclick="begin(100)">100回</button><button onclick="begin(276)">全組合せ</button>
+</div>
+<p class="small">選ぶたびにEloレーティングを更新します。途中経過はこの端末に自動保存されます。</p>
+<div class="controls"><button class="ghost" onclick="resume()">続きから</button><button class="danger" onclick="resetAll()">データ削除</button></div>
+</section>
+<section id="game" class="hidden">
+<div class="panel"><div class="status"><span id="count"></span><span id="pct"></span></div><div class="progress"><div id="bar" class="bar"></div></div></div>
+<div class="arena">
+<div class="card" onclick="pick(0)"><img id="img0"><div class="info"><div id="name0" class="name"></div><div id="group0" class="group"></div></div></div>
+<div class="card" onclick="pick(1)"><img id="img1"><div class="info"><div id="name1" class="name"></div><div id="group1" class="group"></div></div></div>
+</div>
+<div class="vs">TAP YOUR FAVORITE</div>
+<div class="controls"><button class="ghost" onclick="showRanking()">途中結果</button><button class="ghost" onclick="goHome()">中断</button></div>
+</section>
+<section id="result" class="panel hidden"><h2>好き顔ランキング <span id="resultBadge" class="badge"></span></h2><div id="ranking"></div>
+<div class="controls"><button onclick="resume()">比較を続ける</button><button class="ghost" onclick="goHome()">TOPへ</button></div></section>
+</main>
+<script>
+const MEMBERS=[{"id": 1, "name": "陽向キラリ", "group": "A1", "image": "assets/01.jpg"}, {"id": 2, "name": "天城りあ", "group": "A1", "image": "assets/02.jpg"}, {"id": 3, "name": "西乃れいか", "group": "A1", "image": "assets/03.jpg"}, {"id": 4, "name": "夢華れいら", "group": "A1", "image": "assets/04.jpg"}, {"id": 5, "name": "兎佐美るか", "group": "A2", "image": "assets/05.jpg"}, {"id": 6, "name": "羽夢はあと", "group": "A2", "image": "assets/06.jpg"}, {"id": 7, "name": "甘苺いちご", "group": "A2", "image": "assets/07.jpg"}, {"id": 8, "name": "思羽みゆ", "group": "A2", "image": "assets/08.jpg"}, {"id": 9, "name": "天乃羽のん", "group": "A2", "image": "assets/09.jpg"}, {"id": 10, "name": "琴宮はの", "group": "A2", "image": "assets/10.jpg"}, {"id": 11, "name": "愛羽あいか", "group": "B1", "image": "assets/11.jpg"}, {"id": 12, "name": "綿萌そる", "group": "B1", "image": "assets/12.jpg"}, {"id": 13, "name": "苺音ゆのあ", "group": "B1", "image": "assets/13.jpg"}, {"id": 14, "name": "大宮ゆめか", "group": "B1", "image": "assets/14.jpg"}, {"id": 15, "name": "夕陽むゆ", "group": "B1", "image": "assets/15.jpg"}, {"id": 16, "name": "桜井りた", "group": "C1", "image": "assets/16.jpg"}, {"id": 17, "name": "羽音はるな", "group": "C1", "image": "assets/17.jpg"}, {"id": 18, "name": "瀬戸こより", "group": "C1", "image": "assets/18.jpg"}, {"id": 19, "name": "四葉 斗", "group": "C1", "image": "assets/19.jpg"}, {"id": 20, "name": "桜乃 苺星", "group": "C1", "image": "assets/20.jpg"}, {"id": 21, "name": "泡瀬 純愛", "group": "C2", "image": "assets/21.jpg"}, {"id": 22, "name": "彩叶 音々", "group": "C2", "image": "assets/22.jpg"}, {"id": 23, "name": "三谷なれ", "group": "C2", "image": "assets/23.jpg"}, {"id": 24, "name": "焦恋 かぬれ", "group": "C2", "image": "assets/24.jpg"}];
+let S={ratings:{},seen:[],done:0,target:50,pair:null};
+const key='heroines-school-sukigao-v1';
+function initRatings(){MEMBERS.forEach(m=>{if(S.ratings[m.id]==null)S.ratings[m.id]=1500})}
+function save(){localStorage.setItem(key,JSON.stringify(S))}
+function load(){try{let x=JSON.parse(localStorage.getItem(key));if(x)S=x}catch(e){}initRatings()}
+function begin(n){S={ratings:{},seen:[],done:0,target:n,pair:null};initRatings();save();next()}
+function pairKey(a,b){return [a,b].sort((x,y)=>x-y).join('-')}
+function choosePair(){
+ let candidates=[];
+ for(let i=0;i<MEMBERS.length;i++)for(let j=i+1;j<MEMBERS.length;j++){let k=pairKey(MEMBERS[i].id,MEMBERS[j].id);if(!S.seen.includes(k))candidates.push([MEMBERS[i],MEMBERS[j]])}
+ if(!candidates.length){S.seen=[];return choosePair()}
+ // prioritize close ratings, but retain randomness
+ candidates.sort((p,q)=>Math.abs(S.ratings[p[0].id]-S.ratings[p[1].id])-Math.abs(S.ratings[q[0].id]-S.ratings[q[1].id]));
+ let pool=candidates.slice(0,Math.min(50,candidates.length));return pool[Math.floor(Math.random()*pool.length)]
+}
+function next(){
+ if(S.done>=S.target){showRanking(true);return}
+ S.pair=choosePair();save();renderGame()
+}
+function renderGame(){
+ document.querySelector('#start').classList.add('hidden');document.querySelector('#result').classList.add('hidden');document.querySelector('#game').classList.remove('hidden');
+ S.pair.forEach((m,i)=>{document.querySelector('#img'+i).src=m.image;document.querySelector('#name'+i).textContent=m.name;document.querySelector('#group'+i).textContent=m.group});
+ document.querySelector('#count').textContent=`${S.done} / ${S.target} 比較`;
+ let p=Math.round(S.done/S.target*100);document.querySelector('#pct').textContent=p+'%';document.querySelector('#bar').style.width=p+'%'
+}
+function pick(i){
+ let w=S.pair[i],l=S.pair[1-i],rw=S.ratings[w.id],rl=S.ratings[l.id],K=32;
+ let ew=1/(1+Math.pow(10,(rl-rw)/400)),el=1-ew;
+ S.ratings[w.id]=rw+K*(1-ew);S.ratings[l.id]=rl+K*(0-el);
+ S.seen.push(pairKey(w.id,l.id));S.done++;save();next()
+}
+function showRanking(final=false){
+ save();document.querySelector('#start').classList.add('hidden');document.querySelector('#game').classList.add('hidden');document.querySelector('#result').classList.remove('hidden');
+ document.querySelector('#resultBadge').textContent=`${S.done}比較`;
+ let arr=[...MEMBERS].sort((a,b)=>S.ratings[b.id]-S.ratings[a.id]);
+ document.querySelector('#ranking').innerHTML=arr.map((m,i)=>`<div class="rank"><div class="num">${i+1}</div><img src="${m.image}"><div><div class="rname">${m.name}</div><div class="group">${m.group}</div></div><div class="rate">${Math.round(S.ratings[m.id])}</div></div>`).join('')
+}
+function resume(){load();if(S.pair&&S.done<S.target)renderGame();else if(S.done<S.target)next();else showRanking(true)}
+function goHome(){save();document.querySelector('#game').classList.add('hidden');document.querySelector('#result').classList.add('hidden');document.querySelector('#start').classList.remove('hidden')}
+function resetAll(){if(confirm('選択履歴をすべて削除しますか？')){localStorage.removeItem(key);location.reload()}}
+load();
+</script></body></html>
